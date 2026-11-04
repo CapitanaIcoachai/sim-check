@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="SIM-Check: quanto costa davvero la prima SIM. Calcola il costo del primo anno, controlla rinnovi, blocco dei servizi premium e sintesi contrattuale, legge l'SMS di modifica e prepara il reclamo. Tutto sul telefono, nessun dato salvato.">
+<title>SIM-Check</title>
+<style>
+/* Una schermata per volta, verticale, da smartphone. Niente animazioni. Testo grande, contrasto alto, pulsanti da 52 px. */
+:root{
+  --bg:#f4f6f8; --card:#ffffff; --ink:#111827; --muted:#4b5563; --line:#d1d5db;
+  --blu:#1d4ed8; --blu-scuro:#1e3a8a; --blu-chiaro:#dbeafe;
+  --verde:#15803d; --verde-chiaro:#dcfce7; --giallo:#a16207; --giallo-chiaro:#fef9c3; --rosso:#b91c1c; --rosso-chiaro:#fee2e2;
+  --font:-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root{ --bg:#0f172a; --card:#1e293b; --ink:#f1f5f9; --muted:#cbd5e1; --line:#475569; --blu:#60a5fa; --blu-scuro:#bfdbfe; --blu-chiaro:#1e3a8a; --verde:#4ade80; --verde-chiaro:#14532d; --giallo:#fde047; --giallo-chiaro:#713f12; --rosso:#fca5a5; --rosso-chiaro:#7f1d1d; } }
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:18px;line-height:1.5}
+.app{max-width:560px;margin:0 auto;padding:0 16px 32px;padding-top:env(safe-area-inset-top,0px)}
+header{display:flex;align-items:center;gap:12px;padding:14px 0 10px;border-bottom:3px solid var(--blu)}
+header .logo{width:44px;height:44px;flex:none}
+header h1{font-size:24px;margin:0;line-height:1.1}
+header p{margin:2px 0 0;font-size:14px;color:var(--muted)}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:12px 0 4px;min-height:44px}
+.passo{font-size:14px;color:var(--muted)}
+h2{font-size:26px;line-height:1.15;margin:10px 0 8px}
+h3{font-size:18px;margin:18px 0 6px}
+p{margin:0 0 10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:12px 0}
+label{display:block;font-weight:600;margin:14px 0 6px}
+.hint{font-weight:400;color:var(--muted);font-size:15px;display:block}
+input[type=number],input[type=text],input[type=date],select{width:100%;font:inherit;font-size:20px;padding:12px;border:2px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);min-height:52px}
+input:focus,select:focus,button:focus-visible,a:focus-visible{outline:3px solid var(--blu);outline-offset:2px}
+.riga{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.scelta{display:grid;gap:10px;margin:6px 0}
+.scelta label{display:flex;align-items:center;gap:12px;font-weight:500;margin:0;padding:12px;border:2px solid var(--line);border-radius:10px;background:var(--card);min-height:52px;cursor:pointer}
+.scelta input{width:24px;height:24px;flex:none;margin:0}
+.scelta label:has(input:checked){border-color:var(--blu);background:var(--blu-chiaro)}
+.btn{display:block;width:100%;min-height:56px;font:inherit;font-size:19px;font-weight:700;padding:14px 18px;border-radius:12px;border:2px solid var(--blu);background:var(--blu);color:#fff;cursor:pointer;text-align:center;margin:10px 0;text-decoration:none}
+.btn.sec{background:var(--card);color:var(--blu)}
+.btn.piccolo{min-height:44px;font-size:16px;padding:8px 14px;width:auto;display:inline-block;margin:6px 6px 6px 0}
+.indietro{background:none;border:2px solid var(--line);color:var(--ink);font:inherit;font-size:16px;font-weight:600;padding:8px 14px;border-radius:10px;min-height:44px;cursor:pointer}
+.sem{display:flex;align-items:center;gap:14px;padding:16px;border-radius:14px;margin:12px 0;border:3px solid}
+.sem .luce{width:40px;height:40px;border-radius:50%;flex:none;border:3px solid rgba(0,0,0,.25)}
+.sem b{font-size:22px;display:block}
+.sem.verde{background:var(--verde-chiaro);border-color:var(--verde)} .sem.verde .luce{background:#22c55e}
+.sem.giallo{background:var(--giallo-chiaro);border-color:var(--giallo)} .sem.giallo .luce{background:#facc15}
+.sem.rosso{background:var(--rosso-chiaro);border-color:var(--rosso)} .sem.rosso .luce{background:#ef4444}
+.grande{font-size:40px;font-weight:800;line-height:1;margin:4px 0}
+.voce{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.voce:first-child{border-top:none}
+.voce .ic{flex:none;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;color:#fff}
+.ic.ok{background:#15803d} .ic.ko{background:#b91c1c} .ic.attenzione{background:#a16207} .ic.info{background:#1d4ed8}
+.voce b{display:block}
+.voce span{color:var(--muted);font-size:16px}
+table{width:100%;border-collapse:collapse;font-size:17px;margin:6px 0}
+td{padding:8px 0;border-top:1px solid var(--line);vertical-align:top}
+td.n{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+tr.tot td{font-weight:800;font-size:19px;border-top:2px solid var(--ink)}
+textarea{width:100%;min-height:260px;font:inherit;font-size:16px;line-height:1.45;padding:12px;border:2px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink)}
+.extra{border:1px dashed var(--line);border-radius:10px;padding:10px;margin:8px 0}
+.avviso{font-size:15px;color:var(--muted);border-top:1px solid var(--line);margin-top:22px;padding-top:12px}
+.avviso b{color:var(--ink)}
+a{color:var(--blu)}
+.ente{padding:12px 0;border-top:1px solid var(--line)}
+.ente b{display:block;font-size:18px}
+.ente span{color:var(--muted);font-size:16px;display:block}
+.ok-testo{color:var(--verde);font-weight:700} .ko-testo{color:var(--rosso);font-weight:700}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:10px;font-size:16px;display:none}
+.toast.on{display:block}
+[hidden]{display:none !important}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <svg class="logo" viewBox="0 0 48 48" aria-hidden="true"><rect x="8" y="4" width="32" height="40" rx="6" fill="#1d4ed8"/><rect x="14" y="12" width="14" height="10" rx="2" fill="#facc15"/><path d="M16 33 L22 39 L34 26" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  <div><h1>SIM-Check</h1><p>Quanto costa davvero la prima SIM</p></div>
+</header>
+
+<main id="main"></main>
+
+<div class="avviso">
+  <b>Questa app informa e non sostituisce una consulenza legale.</b><br>
+  Nessun dato personale: usa solo numeri e nomi inventati. Niente viene salvato né inviato. L'app non usa l'intelligenza artificiale.<br>
+  Fonti: scheda S16 «SIM-Check» del kit Hack the Market! 2026, controllate il 5 ottobre 2026. <a href="#" data-go="fonti">Vedi le fonti</a>.<br>
+  Squadra: <span id="squadra">Squadra Poerio</span> · Licenza MIT · Versione del 10 ottobre 2026
+</div>
+</div>
+<div class="toast" id="toast">Copiato</div>
+
+<script>
+// SIM-Check: nucleo di calcolo. Nessuna dipendenza, nessun dato salvato.
+// Regole: rinnovi mensili o a multipli del mese (art. 1, c. 1-bis, d.l. 7/2007); sintesi contrattuale prima della firma
+// (art. 98-quaterdecies, c. 3-4, Codice comunicazioni elettroniche); modifiche con preavviso di almeno 30 giorni e recesso
+// senza penali entro 60 giorni dall'avviso (art. 98-septiesdecies, c. 5); servizi a pagamento solo con consenso espresso e
+// documentato (art. 1, c. 3-quater, d.l. 7/2007); blocco dei servizi premium sulle nuove SIM, attivazione solo con OTP
+// (AGCOM, delibera n. 10/21/CONS). Fonti: scheda S16 del kit HTM2026, controllate il 5 ottobre 2026.
+var SC = (function () {
+  function r2(x) { return Math.round((x + 1e-9) * 100) / 100; }
+  function periodiAnno(rinnovo) { return rinnovo === "4settimane" ? 13 : 12; }
+
+  // offerta: {prezzo, rinnovo:"mese"|"4settimane", promoPeriodi, prezzoDopo, attivazione, sim,
+  //           extra:[{nome, prezzo, ogni:"settimana"|"mese", otp:true|false}], bloccoPremium, sintesi}
+  function calcolaAnno(o) {
+    var n = periodiAnno(o.rinnovo);
+    var promo = Math.max(0, Math.min(n, o.promoPeriodi || 0));
+    var dopo = (o.promoPeriodi > 0 && o.prezzoDopo != null) ? o.prezzoDopo : o.prezzo;
+    var canone = r2(promo * o.prezzo + (n - promo) * dopo);
+    var extra = (o.extra || []).map(function (e) {
+      var volte = e.ogni === "settimana" ? 52 : 12;
+      return { nome: e.nome, prezzo: e.prezzo, ogni: e.ogni, volte: volte, totale: r2(volte * e.prezzo), otp: !!e.otp };
+    });
+    var extraTot = r2(extra.reduce(function (s, e) { return s + e.totale; }, 0));
+    var unaTantum = r2((o.attivazione || 0) + (o.sim || 0));
+    var totale = r2(unaTantum + canone + extraTot);
+    var mese = r2(totale / 12);
+    return { periodi: n, promoPeriodi: promo, prezzoDopo: dopo, canone: canone, unaTantum: unaTantum, extra: extra, extraTot: extraTot,
+      totale: totale, mese: mese, volte: o.prezzo > 0 ? Math.round((mese / o.prezzo) * 10) / 10 : null };
+  }
+
+  // Semaforo dell'offerta: rosso = una regola non rispettata; giallo = attenzione; verde = in regola
+  function controlli(o) {
+    var c = [];
+    c.push(o.rinnovo === "mese"
+      ? { esito: "ok", titolo: "Rinnovo mensile", testo: "L'offerta si rinnova ogni mese, come prevede la legge." }
+      : { esito: "ko", titolo: "Rinnovo ogni 4 settimane", testo: "In un anno paghi 13 rinnovi invece di 12. La legge prevede rinnovi mensili o a multipli del mese (art. 1, c. 1-bis, d.l. 7/2007)." });
+    c.push(o.bloccoPremium
+      ? { esito: "ok", titolo: "Blocco dei servizi premium attivo", testo: "Sulla tua SIM i servizi a pagamento di terzi sono bloccati: si attivano solo con un codice OTP." }
+      : { esito: "ko", titolo: "Blocco dei servizi premium non attivo", testo: "Sulle SIM nuove il blocco deve esserci di default e si toglie solo con un codice OTP (AGCOM, delibera n. 10/21/CONS). Chiedi all'operatore di attivarlo: è gratis." });
+    c.push(o.sintesi
+      ? { esito: "ok", titolo: "Sintesi contrattuale ricevuta", testo: "Hai il documento con costi di attivazione, costi ricorrenti e condizioni di rinnovo." }
+      : { esito: "ko", titolo: "Sintesi contrattuale mancante", testo: "Prima della firma l'operatore deve consegnarla gratis (art. 98-quaterdecies, c. 3-4, Codice delle comunicazioni elettroniche). Chiedila per iscritto." });
+    var senzaOtp = (o.extra || []).filter(function (e) { return !e.otp; });
+    var conOtp = (o.extra || []).filter(function (e) { return e.otp; });
+    if (senzaOtp.length) c.push({ esito: "ko", titolo: "Servizio a pagamento senza consenso documentato", testo: senzaOtp.map(function (e) { return "«" + e.nome + "»"; }).join(", ") + ": un servizio in abbonamento a pagamento si attiva solo con consenso espresso e documentato (art. 1, c. 3-quater, d.l. 7/2007). Puoi chiedere la disattivazione e il rimborso." });
+    if (conOtp.length) c.push({ esito: "attenzione", titolo: "Servizi extra a pagamento", testo: conOtp.map(function (e) { return "«" + e.nome + "»"; }).join(", ") + ": attivati con il tuo consenso, ma pesano sul costo dell'anno. Controlla se ti servono davvero." });
+    if ((o.promoPeriodi || 0) > 0 && o.prezzoDopo != null && o.prezzoDopo > o.prezzo) c.push({ esito: "attenzione", titolo: "Il prezzo sale dopo la promozione", testo: "Da " + eur(o.prezzo) + " a " + eur(o.prezzoDopo) + " dopo " + o.promoPeriodi + " rinnovi: il prezzo scritto in grande vale solo all'inizio." });
+    if ((o.attivazione || 0) + (o.sim || 0) > 0) c.push({ esito: "info", titolo: "Costi una tantum", testo: "Attivazione " + eur(o.attivazione || 0) + " e SIM " + eur(o.sim || 0) + ": non sono nel prezzo scritto in grande, ma li paghi." });
+    var esito = c.some(function (x) { return x.esito === "ko"; }) ? "rosso" : c.some(function (x) { return x.esito === "attenzione"; }) ? "giallo" : "verde";
+    return { esito: esito, voci: c };
+  }
+
+  // SMS di modifica: {dataSms:"YYYY-MM-DD", dataNuovo:"YYYY-MM-DD", prezzoVecchio, prezzoNuovo, citaRecesso:true|false}
+  function sms(s) {
+    var d1 = parseDate(s.dataSms), d2 = parseDate(s.dataNuovo);
+    var preavviso = Math.round((d2 - d1) / 86400000);
+    var scadenza = new Date(d1.getTime()); scadenza.setDate(scadenza.getDate() + 60);
+    var aumento = r2(s.prezzoNuovo - s.prezzoVecchio);
+    var perc = s.prezzoVecchio > 0 ? Math.round((aumento / s.prezzoVecchio) * 1000) / 10 : null;
+    var voci = [];
+    voci.push(preavviso >= 30
+      ? { esito: "ok", titolo: "Preavviso di " + preavviso + " giorni", testo: "Rispetta i 30 giorni minimi (art. 98-septiesdecies, c. 5, Codice delle comunicazioni elettroniche)." }
+      : { esito: "attenzione", titolo: "Preavviso di " + preavviso + " giorni: ne servono almeno 30", testo: "La modifica va comunicata almeno 30 giorni prima. Puoi farlo presente nel reclamo." });
+    voci.push(s.citaRecesso
+      ? { esito: "ok", titolo: "L'SMS dice che puoi recedere senza costi", testo: "L'avviso contiene l'informazione dovuta sul diritto di recedere o cambiare operatore." }
+      : { esito: "ko", titolo: "L'SMS non dice che puoi recedere o cambiare operatore gratis", testo: "L'avviso deve informarti di questo diritto: AGCOM ha sanzionato un operatore proprio per questa mancanza (delibera n. 19/25/CONS)." });
+    voci.push({ esito: aumento > 0 ? "info" : "ok", titolo: aumento > 0 ? "Aumento di " + eur(aumento) + " al mese (" + (perc >= 0 ? "+" : "") + fmtPerc(perc) + ")" : "Nessun aumento", testo: aumento > 0 ? "In un anno sono " + eur(r2(aumento * 12)) + " in più." : "" });
+    var esito = voci.some(function (x) { return x.esito === "ko"; }) ? "rosso" : voci.some(function (x) { return x.esito === "attenzione"; }) ? "giallo" : "verde";
+    return { preavviso: preavviso, scadenza: fmtDate(scadenza), scadenzaIso: iso(scadenza), aumento: aumento, perc: perc, annuo: r2(aumento * 12), esito: esito, voci: voci };
+  }
+
+  function parseDate(s) { var p = String(s).split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  function iso(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+  function fmtDate(d) { return String(d.getDate()).padStart(2, "0") + "/" + String(d.getMonth() + 1).padStart(2, "0") + "/" + d.getFullYear(); }
+  function eur(x) { return (Math.round(x * 100) / 100).toFixed(2).replace(".", ",") + " €"; }
+  function fmtPerc(p) { return p == null ? "" : String(p).replace(".", ",") + "%"; }
+
+  // Lettere: i dati personali restano segnaposto fra parentesi quadre.
+  function lettera(tipo, d) {
+    d = d || {};
+    var intest = "Spett.le [Operatore], servizio clienti\n\nOggetto: ";
+    var firma = "\n\n[Luogo e data]\n[Nome e cognome]\n[Numero di telefono interessato]\n[Codice cliente, se presente]";
+    if (tipo === "premium") return intest + "reclamo per servizio a pagamento attivato senza consenso e richiesta di rimborso\n\n" +
+      "Io sottoscritto/a [Nome e cognome], titolare dell'utenza [Numero], contesto l'addebito del servizio «" + (d.servizio || "[nome del servizio]") + "» (" + (d.costo || "[costo]") + "), che non ho mai richiesto con consenso espresso e documentato, come previsto dall'art. 1, c. 3-quater, del d.l. 7/2007, e che risulta attivato senza codice OTP, in contrasto con la delibera AGCOM n. 10/21/CONS.\n\n" +
+      "Chiedo: 1) la disattivazione immediata del servizio; 2) il rimborso di tutti gli importi addebitati, pari a [importo]; 3) l'attivazione gratuita del blocco dei servizi premium sulla mia SIM; 4) risposta scritta a questo reclamo.\n\n" +
+      "In mancanza, mi rivolgerò alla procedura di conciliazione gratuita ConciliaWeb dell'AGCOM." + firma;
+    if (tipo === "recesso") return intest + "recesso senza penali per modifica unilaterale delle condizioni contrattuali\n\n" +
+      "Io sottoscritto/a [Nome e cognome], titolare dell'utenza [Numero], ho ricevuto il " + (d.dataSms || "[data dell'SMS]") + " la comunicazione di modifica dell'offerta «" + (d.offerta || "[nome dell'offerta]") + "», con il canone che dal " + (d.dataNuovo || "[data della modifica]") + " passa da " + (d.vecchio || "[prezzo attuale]") + " a " + (d.nuovo || "[nuovo prezzo]") + ".\n\n" +
+      "Ai sensi dell'art. 98-septiesdecies, c. 5, del Codice delle comunicazioni elettroniche, comunico il recesso dal contratto senza penali né costi di disattivazione, entro i 60 giorni dall'avviso (scadenza: " + (d.scadenza || "[data]") + ")." +
+      (d.preavviso != null && d.preavviso < 30 ? "\n\nSegnalo inoltre che il preavviso è stato di " + d.preavviso + " giorni, inferiore ai 30 giorni minimi previsti dalla stessa norma." : "") +
+      "\n\nChiedo conferma scritta del recesso e la data di cessazione." + firma;
+    if (tipo === "sintesi") return intest + "richiesta della sintesi contrattuale\n\n" +
+      "Io sottoscritto/a [Nome e cognome], titolare dell'utenza [Numero], attivata il [data], chiedo la consegna gratuita della sintesi contrattuale dell'offerta «" + (d.offerta || "[nome dell'offerta]") + "», con i costi di attivazione, i costi ricorrenti e le condizioni di rinnovo, come previsto dall'art. 98-quaterdecies, c. 3 e 4, del Codice delle comunicazioni elettroniche.\n\n" +
+      "Chiedo risposta scritta entro i termini previsti." + firma;
+    return "";
+  }
+
+  // I tre casi di prova della scheda S16, con gli esiti attesi dal kit
+  var CASI = [
+    { id: 1, nome: "NubiMobile «Nubi 100»", offerta: { nome: "Nubi 100", prezzo: 6.99, rinnovo: "mese", promoPeriodi: 0, prezzoDopo: null, attivazione: 0, sim: 10, extra: [], bloccoPremium: true, sintesi: true },
+      atteso: { totale: 93.88, mese: 7.82, esito: "verde" } },
+    { id: 2, nome: "RazzoTel «Super 4,99»", offerta: { nome: "Super 4,99", prezzo: 4.99, rinnovo: "4settimane", promoPeriodi: 3, prezzoDopo: 9.99, attivazione: 19.99, sim: 10, extra: [{ nome: "Oroscopo Plus", prezzo: 1.99, ogni: "settimana", otp: false }], bloccoPremium: false, sintesi: false },
+      atteso: { canone: 114.87, totale: 248.34, mese: 20.70, volte: 4.1, esito: "rosso" } },
+    { id: 3, nome: "PioggiaSIM «Easy 8»", offerta: { nome: "Easy 8", prezzo: 7.99, rinnovo: "mese", promoPeriodi: 0, prezzoDopo: null, attivazione: 0, sim: 5, extra: [], bloccoPremium: true, sintesi: true },
+      sms: { dataSms: "2026-09-01", dataNuovo: "2026-09-15", prezzoVecchio: 7.99, prezzoNuovo: 9.49, citaRecesso: true },
+      atteso: { totale: 100.88, esito: "verde", preavviso: 14, aumento: 1.50, perc: 18.8, annuo: 18, scadenza: "31/10/2026", esitoSms: "giallo" } }
+  ];
+  function verificaCasi() {
+    return CASI.map(function (c) {
+      var a = calcolaAnno(c.offerta), k = controlli(c.offerta), ok = true, righe = [];
+      function chk(nome, got, exp) { var pass = (typeof exp === "number") ? Math.abs(got - exp) < 0.006 : got === exp; ok = ok && pass; righe.push({ nome: nome, atteso: exp, ottenuto: got, ok: pass }); }
+      if (c.atteso.canone != null) chk("canone dell'anno", a.canone, c.atteso.canone);
+      chk("costo del primo anno", a.totale, c.atteso.totale); chk("costo medio al mese", a.mese, c.atteso.mese != null ? c.atteso.mese : a.mese);
+      if (c.atteso.volte != null) chk("volte il prezzo pubblicizzato", a.volte, c.atteso.volte);
+      chk("semaforo dell'offerta", k.esito, c.atteso.esito);
+      if (c.sms) { var s = sms(c.sms); chk("giorni di preavviso", s.preavviso, c.atteso.preavviso); chk("aumento al mese", s.aumento, c.atteso.aumento); chk("aumento in percentuale", s.perc, c.atteso.perc); chk("aumento in un anno", s.annuo, c.atteso.annuo); chk("recesso entro il", s.scadenza, c.atteso.scadenza); chk("semaforo dell'SMS", s.esito, c.atteso.esitoSms); }
+      return { caso: c, ok: ok, righe: righe };
+    });
+  }
+  return { calcolaAnno: calcolaAnno, controlli: controlli, sms: sms, lettera: lettera, CASI: CASI, verificaCasi: verificaCasi, eur: eur, fmtPerc: fmtPerc, fmtDate: fmtDate };
+})();
+
+
+</script>
+<script>
+// Interfaccia: una schermata per volta. Lo stato vive solo in memoria, mai salvato.
+var stato = { offerta: { nome: "", prezzo: null, rinnovo: "mese", promoPeriodi: 0, prezzoDopo: null, attivazione: 0, sim: 0, extra: [], bloccoPremium: null, sintesi: null },
+              sms: { dataSms: "", dataNuovo: "", prezzoVecchio: null, prezzoNuovo: null, citaRecesso: null }, ultimoCalcolo: null, ultimoSms: null };
+var storia = [];
+var main = document.getElementById("main");
+function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+function toast(t) { var el = document.getElementById("toast"); el.textContent = t; el.classList.add("on"); setTimeout(function () { el.classList.remove("on"); }, 1500); }
+function copia(t) { function done() { toast("Copiato"); } if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, function () { fallback(t); done(); }); else { fallback(t); done(); } }
+function fallback(t) { var ta = document.createElement("textarea"); ta.value = t; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); } catch (e) {} document.body.removeChild(ta); }
+function num(id, def) { var v = parseFloat(String(document.getElementById(id).value).replace(",", ".")); return isNaN(v) ? def : v; }
+function val(name) { var el = document.querySelector('input[name="' + name + '"]:checked'); return el ? el.value : null; }
+function vai(s, push) { if (push !== false && SCHERMATE[s]) storia.push(s); render(s); window.scrollTo(0, 0); }
+function indietro() { storia.pop(); var prev = storia.length ? storia[storia.length - 1] : "home"; render(prev); window.scrollTo(0, 0); }
+function testata(titolo, passo) { return '<div class="topbar"><button class="indietro" type="button" data-back="1" aria-label="Torna indietro">‹ Indietro</button><span class="passo">' + esc(passo || "") + '</span></div><h2>' + esc(titolo) + '</h2>'; }
+function semaforo(esito, titolo, testo) { var n = { verde: "Verde: in regola", giallo: "Giallo: attenzione", rosso: "Rosso: qualcosa non va" }[esito]; return '<div class="sem ' + esito + '" role="status"><div class="luce" aria-hidden="true"></div><div><b>' + n + '</b>' + esc(titolo || "") + (testo ? '<br><span>' + esc(testo) + '</span>' : "") + '</div></div>'; }
+function voci(list) { return '<div class="card">' + list.map(function (v) { var ic = { ok: "✓", ko: "✕", attenzione: "!", info: "i" }[v.esito]; return '<div class="voce"><div class="ic ' + v.esito + '" aria-label="' + v.esito + '">' + ic + '</div><div><b>' + esc(v.titolo) + '</b><span>' + esc(v.testo) + '</span></div></div>'; }).join("") + '</div>'; }
+
+var SCHERMATE = {
+  home: function () {
+    return '<h2>Il prezzo scritto in grande non è quello che paghi</h2>' +
+      '<p>Con la prima SIM contano attivazione, costo della SIM, prezzo dopo la promozione, rinnovi «ogni 4 settimane» e servizi a pagamento attivati con un tocco. Questa app calcola il costo vero del primo anno e ti dice che cosa puoi fare.</p>' +
+      '<p class="hint">Per chi compra la prima SIM o ha ricevuto un SMS che cambia l\'offerta. Bastano i numeri del volantino: nessun dato personale.</p>' +
+      '<a class="btn" href="#" data-go="offerta">Calcola il costo vero della SIM</a>' +
+      '<a class="btn sec" href="#" data-go="sms">Ho ricevuto un SMS di modifica</a>' +
+      '<a class="btn sec" href="#" data-go="aiuto">A chi rivolgersi</a>' +
+      '<a class="btn sec" href="#" data-go="casi">Prova con i tre casi del kit</a>';
+  },
+  offerta: function () {
+    var o = stato.offerta;
+    return testata("L'offerta, come la leggi sul volantino", "Passo 1 di 3") +
+      '<div class="card">' +
+      '<label for="o-nome">Nome dell\'offerta <span class="hint">Inventato o preso dal volantino: non serve il tuo nome.</span></label><input type="text" id="o-nome" value="' + esc(o.nome) + '" placeholder="es. Super 4,99">' +
+      '<label for="o-prezzo">Prezzo pubblicizzato <span class="hint">Il numero scritto in grande, in euro.</span></label><input type="number" id="o-prezzo" inputmode="decimal" step="0.01" min="0" value="' + (o.prezzo == null ? "" : o.prezzo) + '" placeholder="es. 4,99">' +
+      '<label>Ogni quanto si rinnova?</label><div class="scelta">' +
+      '<label><input type="radio" name="rinnovo" value="mese" ' + (o.rinnovo === "mese" ? "checked" : "") + '> Ogni mese (12 rinnovi in un anno)</label>' +
+      '<label><input type="radio" name="rinnovo" value="4settimane" ' + (o.rinnovo === "4settimane" ? "checked" : "") + '> Ogni 4 settimane (13 rinnovi in un anno)</label></div>' +
+      '<label for="o-promo">Per quanti rinnovi vale il prezzo pubblicizzato? <span class="hint">Scrivi 0 se non c\'è una promozione a tempo.</span></label><input type="number" id="o-promo" inputmode="numeric" min="0" max="13" value="' + (o.promoPeriodi || 0) + '">' +
+      '<label for="o-dopo">Prezzo dopo la promozione <span class="hint">Lascia vuoto se non cambia.</span></label><input type="number" id="o-dopo" inputmode="decimal" step="0.01" min="0" value="' + (o.prezzoDopo == null ? "" : o.prezzoDopo) + '" placeholder="es. 9,99">' +
+      '<div class="riga"><div><label for="o-att">Attivazione</label><input type="number" id="o-att" inputmode="decimal" step="0.01" min="0" value="' + (o.attivazione || 0) + '"></div>' +
+      '<div><label for="o-sim">Costo della SIM</label><input type="number" id="o-sim" inputmode="decimal" step="0.01" min="0" value="' + (o.sim || 0) + '"></div></div>' +
+      '</div>' +
+      '<button class="btn" type="button" data-act="salvaOfferta">Avanti: servizi extra e controlli</button>';
+  },
+  extra: function () {
+    var o = stato.offerta;
+    var lista = o.extra.map(function (e, i) { return '<div class="extra"><b>' + esc(e.nome) + '</b>: ' + SC.eur(e.prezzo) + ' ogni ' + (e.ogni === "settimana" ? "settimana" : "mese") + ', ' + (e.otp ? "attivato con codice OTP" : "attivato senza codice OTP") + ' <button class="btn sec piccolo" type="button" data-rm="' + i + '">Togli</button></div>'; }).join("");
+    return testata("Servizi extra e tre controlli", "Passo 2 di 3") +
+      '<div class="card"><h3>Servizi a pagamento sulla SIM</h3><p class="hint">Oroscopi, giochi, suonerie: spesso si attivano toccando un banner. Aggiungili se ci sono.</p>' + lista +
+      '<label for="e-nome">Nome del servizio</label><input type="text" id="e-nome" placeholder="es. Oroscopo Plus">' +
+      '<div class="riga"><div><label for="e-prezzo">Prezzo</label><input type="number" id="e-prezzo" inputmode="decimal" step="0.01" min="0" placeholder="es. 1,99"></div>' +
+      '<div><label for="e-ogni">Ogni</label><select id="e-ogni"><option value="settimana">settimana</option><option value="mese">mese</option></select></div></div>' +
+      '<label>Come è stato attivato?</label><div class="scelta"><label><input type="radio" name="e-otp" value="no" checked> Con un tocco su un banner, senza codice OTP</label><label><input type="radio" name="e-otp" value="si"> Con un codice OTP ricevuto via SMS</label></div>' +
+      '<button class="btn sec" type="button" data-act="aggiungiExtra">Aggiungi questo servizio</button></div>' +
+      '<div class="card"><h3>Tre controlli</h3>' +
+      '<label>Il blocco dei servizi premium è attivo sulla SIM?</label><div class="scelta"><label><input type="radio" name="blocco" value="si" ' + (o.bloccoPremium === true ? "checked" : "") + '> Sì, è attivo</label><label><input type="radio" name="blocco" value="no" ' + (o.bloccoPremium === false ? "checked" : "") + '> No, o non lo so</label></div>' +
+      '<label>Hai ricevuto la sintesi contrattuale prima di firmare?</label><div class="scelta"><label><input type="radio" name="sintesi" value="si" ' + (o.sintesi === true ? "checked" : "") + '> Sì, ce l\'ho</label><label><input type="radio" name="sintesi" value="no" ' + (o.sintesi === false ? "checked" : "") + '> No, o non lo so</label></div>' +
+      '<p class="hint">Il terzo controllo, il rinnovo mensile, lo fa l\'app con quello che hai scritto prima.</p></div>' +
+      '<button class="btn" type="button" data-act="calcola">Vedi il costo vero</button>';
+  },
+  risultato: function () {
+    var o = stato.offerta, a = SC.calcolaAnno(o), k = SC.controlli(o); stato.ultimoCalcolo = a;
+    var righe = '<tr><td>Attivazione e SIM</td><td class="n">' + SC.eur(a.unaTantum) + '</td></tr>';
+    if (a.promoPeriodi > 0) righe += '<tr><td>' + a.promoPeriodi + ' rinnovi a ' + SC.eur(o.prezzo) + '</td><td class="n">' + SC.eur(a.promoPeriodi * o.prezzo) + '</td></tr><tr><td>' + (a.periodi - a.promoPeriodi) + ' rinnovi a ' + SC.eur(a.prezzoDopo) + '</td><td class="n">' + SC.eur((a.periodi - a.promoPeriodi) * a.prezzoDopo) + '</td></tr>';
+    else righe += '<tr><td>' + a.periodi + ' rinnovi a ' + SC.eur(o.prezzo) + '</td><td class="n">' + SC.eur(a.canone) + '</td></tr>';
+    a.extra.forEach(function (e) { righe += '<tr><td>«' + esc(e.nome) + '»: ' + e.volte + ' × ' + SC.eur(e.prezzo) + '</td><td class="n">' + SC.eur(e.totale) + '</td></tr>'; });
+    righe += '<tr class="tot"><td>Primo anno</td><td class="n">' + SC.eur(a.totale) + '</td></tr>';
+    var volte = a.volte && a.volte >= 1.3 ? '<p>Cioè <b>circa ' + String(a.volte).replace(".", ",") + ' volte</b> il prezzo scritto in grande.</p>' : "";
+    var azioni = "";
+    if (o.extra.some(function (e) { return !e.otp; })) azioni += '<a class="btn" href="#" data-go="lettera" data-tipo="premium">Scrivi il reclamo per il servizio non richiesto</a>';
+    if (o.sintesi === false) azioni += '<a class="btn sec" href="#" data-go="lettera" data-tipo="sintesi">Chiedi la sintesi contrattuale</a>';
+    azioni += '<a class="btn sec" href="#" data-go="aiuto">A chi rivolgersi</a>';
+    return testata(o.nome ? "«" + o.nome + "»: il costo vero" : "Il costo vero", "Passo 3 di 3") +
+      semaforo(k.esito, k.esito === "verde" ? "L'offerta rispetta le regole controllate." : k.esito === "giallo" ? "Nessuna regola violata, ma il costo reale è più alto di quello scritto in grande." : "Almeno una regola non è rispettata: sotto trovi che cosa fare.") +
+      '<div class="card"><p class="hint">Costo medio al mese nel primo anno</p><div class="grande">' + SC.eur(a.mese) + '</div><p class="hint">Prezzo pubblicizzato: ' + SC.eur(o.prezzo) + '</p>' + volte + '<table>' + righe + '</table></div>' +
+      '<h3>I controlli, uno per uno</h3>' + voci(k.voci) + '<h3>Che cosa puoi fare</h3>' + azioni;
+  },
+  sms: function () {
+    var s = stato.sms;
+    return testata("L'SMS che cambia l'offerta", "Modifica dell'offerta") +
+      '<p>Copia dall\'SMS solo le date e i prezzi. Il numero di telefono e il nome dell\'operatore non servono.</p><div class="card">' +
+      '<label for="s-data">Data in cui hai ricevuto l\'SMS</label><input type="date" id="s-data" value="' + esc(s.dataSms) + '">' +
+      '<label for="s-nuovo">Data da cui vale il nuovo prezzo</label><input type="date" id="s-nuovo" value="' + esc(s.dataNuovo) + '">' +
+      '<div class="riga"><div><label for="s-pv">Prezzo di oggi</label><input type="number" id="s-pv" inputmode="decimal" step="0.01" min="0" value="' + (s.prezzoVecchio == null ? "" : s.prezzoVecchio) + '" placeholder="es. 7,99"></div>' +
+      '<div><label for="s-pn">Nuovo prezzo</label><input type="number" id="s-pn" inputmode="decimal" step="0.01" min="0" value="' + (s.prezzoNuovo == null ? "" : s.prezzoNuovo) + '" placeholder="es. 9,49"></div></div>' +
+      '<label>L\'SMS dice che puoi recedere o cambiare operatore senza costi?</label><div class="scelta"><label><input type="radio" name="cita" value="si" ' + (s.citaRecesso === true ? "checked" : "") + '> Sì, lo dice</label><label><input type="radio" name="cita" value="no" ' + (s.citaRecesso === false ? "checked" : "") + '> No, non lo dice</label></div></div>' +
+      '<button class="btn" type="button" data-act="calcolaSms">Vedi i tuoi diritti e le date</button>';
+  },
+  risultatoSms: function () {
+    var s = stato.sms, r = SC.sms(s); stato.ultimoSms = r;
+    return testata("Preavviso, aumento e data limite", "Modifica dell'offerta") +
+      semaforo(r.esito, r.esito === "verde" ? "L'avviso rispetta le regole controllate." : r.esito === "giallo" ? "Hai comunque il diritto di recedere senza costi." : "L'avviso non rispetta una regola, e hai il diritto di recedere senza costi.") +
+      '<div class="card"><p class="hint">Puoi recedere o cambiare operatore senza penali entro il</p><div class="grande">' + r.scadenza + '</div><p class="hint">60 giorni dalla data dell\'SMS. Dopo, la modifica vale.</p>' +
+      '<table><tr><td>Giorni di preavviso</td><td class="n">' + r.preavviso + ' (minimo 30)</td></tr><tr><td>Aumento al mese</td><td class="n">' + SC.eur(r.aumento) + (r.perc != null ? ' (+' + SC.fmtPerc(r.perc) + ')' : "") + '</td></tr><tr class="tot"><td>In un anno</td><td class="n">' + SC.eur(r.annuo) + ' in più</td></tr></table></div>' +
+      voci(r.voci) + '<h3>Che cosa puoi fare</h3>' +
+      '<a class="btn" href="#" data-go="lettera" data-tipo="recesso">Scrivi la dichiarazione di recesso</a>' +
+      '<a class="btn sec" href="#" data-go="aiuto">Se l\'operatore non risponde</a>';
+  },
+  lettera: function (tipo) {
+    var o = stato.offerta, s = stato.sms, r = stato.ultimoSms, d = {};
+    if (tipo === "premium") { var e = o.extra.filter(function (x) { return !x.otp; })[0] || {}; d = { servizio: e.nome, costo: e.prezzo != null ? SC.eur(e.prezzo) + " ogni " + e.ogni : null }; }
+    if (tipo === "recesso") d = { offerta: o.nome || null, dataSms: s.dataSms ? SC.fmtDate(new Date(s.dataSms)) : null, dataNuovo: s.dataNuovo ? SC.fmtDate(new Date(s.dataNuovo)) : null, vecchio: s.prezzoVecchio != null ? SC.eur(s.prezzoVecchio) : null, nuovo: s.prezzoNuovo != null ? SC.eur(s.prezzoNuovo) : null, scadenza: r ? r.scadenza : null, preavviso: r ? r.preavviso : null };
+    if (tipo === "sintesi") d = { offerta: o.nome || null };
+    var testo = SC.lettera(tipo, d);
+    var titoli = { premium: "Reclamo per servizio non richiesto", recesso: "Dichiarazione di recesso", sintesi: "Richiesta della sintesi contrattuale" };
+    return testata(titoli[tipo] || "Lettera", "Testo da copiare") +
+      '<p>I dati personali sono fra parentesi quadre: li completi tu, fuori dall\'app. Invia il testo dal canale scritto del tuo operatore (area clienti, email o PEC, raccomandata) e conserva la prova dell\'invio.</p>' +
+      '<textarea id="testo-lettera" aria-label="Testo della lettera">' + esc(testo) + '</textarea>' +
+      '<button class="btn" type="button" data-act="copiaLettera">Copia il testo</button>' +
+      '<div class="card"><b>Se il reclamo non basta.</b> La conciliazione con l\'operatore è gratuita e obbligatoria prima di andare dal giudice: si fa sulla piattaforma ConciliaWeb dell\'AGCOM. <a href="#" data-go="aiuto">A chi rivolgersi</a>.</div>';
+  },
+  aiuto: function () {
+    return testata("A chi rivolgersi", "Enti ufficiali") +
+      '<p>Prima scrivi all\'operatore e conserva la risposta. Poi, nell\'ordine:</p><div class="card">' +
+      '<div class="ente"><b>ConciliaWeb, AGCOM</b><span>Conciliazione gratuita fra utenti e operatori di telefonia: è il passo obbligatorio prima del giudice. Serve dopo un reclamo scritto senza risposta o con risposta negativa.</span><a href="https://www.agcom.it/agcom-per-te/i-miei-diritti/contenzioso-tra-utenti-e-operatori" target="_blank" rel="noopener">agcom.it: contenzioso tra utenti e operatori</a></div>' +
+      '<div class="ente"><b>Segnalazioni AGCOM</b><span>Per segnalare all\'Autorità una pratica scorretta dell\'operatore, come i servizi premium attivati senza consenso o gli SMS di modifica incompleti.</span><a href="https://segnalazioni.agcom.it/" target="_blank" rel="noopener">segnalazioni.agcom.it</a></div>' +
+      '<div class="ente"><b>AGCM, Autorità garante della concorrenza e del mercato</b><span>Per pubblicità ingannevole e pratiche commerciali scorrette.</span><a href="https://www.agcm.it/servizi/segnala-on-line" target="_blank" rel="noopener">agcm.it: segnala on line</a></div>' +
+      '<div class="ente"><b>Centro Europeo Consumatori Italia</b><span>Se l\'operatore ha sede in un altro paese dell\'Unione europea.</span><a href="https://ecc-netitalia.it/it/modulo-reclami/" target="_blank" rel="noopener">ecc-netitalia.it: modulo reclami</a></div>' +
+      '<div class="ente"><b>Prosumer, Rete di Consumatori Indipendenti APS</b><span>Associazione di consumatori di Salerno: informazione e tutela.</span><span>info@prosumer.cloud</span></div>' +
+      '</div><p class="hint">Collegamenti presi dal kit di Hack the Market! 2026, controllati il 5 ottobre 2026.</p>';
+  },
+  casi: function () {
+    var ris = SC.verificaCasi();
+    return testata("I tre casi di prova del kit", "Autoverifica") +
+      '<p>La scheda S16 dà tre offerte inventate con l\'esito atteso. L\'app li ricalcola qui davanti a te: ogni riga confronta il numero atteso dal kit con quello ottenuto.</p>' +
+      ris.map(function (v) {
+        return '<div class="card"><h3>Caso ' + v.caso.id + ': ' + esc(v.caso.nome) + ' <span class="' + (v.ok ? "ok-testo" : "ko-testo") + '">' + (v.ok ? "tutto coincide" : "differenze") + '</span></h3><table>' +
+          v.righe.map(function (r) { return '<tr><td>' + esc(r.nome) + '</td><td class="n">' + esc(typeof r.atteso === "number" ? String(r.atteso).replace(".", ",") : r.atteso) + '</td><td class="n">' + (r.ok ? "✓" : "✕ " + esc(String(r.ottenuto))) + '</td></tr>'; }).join("") +
+          '</table><button class="btn sec piccolo" type="button" data-carica="' + v.caso.id + '">Apri questo caso nell\'app</button></div>';
+      }).join("");
+  },
+  fonti: function () {
+    return testata("Le fonti", "Controllate il 5 ottobre 2026") +
+      '<div class="card">' +
+      '<p><b>Rinnovi mensili.</b> Art. 1, comma 1-bis, decreto-legge 7/2007: rinnovi e fatture delle offerte sono mensili o a multipli del mese.</p>' +
+      '<p><b>Sintesi contrattuale.</b> Art. 98-quaterdecies, commi 3 e 4, Codice delle comunicazioni elettroniche: consegnata gratis prima della firma, con costi di attivazione, costi ricorrenti e condizioni di rinnovo.</p>' +
+      '<p><b>Modifiche delle condizioni.</b> Art. 98-septiesdecies, comma 5, Codice delle comunicazioni elettroniche: preavviso di almeno 30 giorni; recesso o cambio operatore senza penali entro 60 giorni dall\'avviso.</p>' +
+      '<p><b>Servizi a pagamento.</b> Art. 1, comma 3-quater, decreto-legge 7/2007: nessun servizio in abbonamento a pagamento senza consenso espresso e documentato. AGCOM, delibera n. 10/21/CONS, artt. 1 e 2: blocco dei servizi premium di default sulle nuove SIM, attivazione solo con codice OTP. <a href="https://www.agcom.it/sites/default/files/migration/delibera/Delibera%2010-21-CONS.pdf" target="_blank" rel="noopener">Testo della delibera (PDF)</a></p>' +
+      '<p><b>Casi documentati.</b> AGCOM, delibera n. 191/21/CONS (10 giugno 2021): 812.000 euro a un operatore per i servizi premium attivati senza consenso. <a href="https://www.agcom.it/provvedimenti/delibera-191-21-cons" target="_blank" rel="noopener">agcom.it</a>. AGCOM, delibera n. 19/25/CONS (22 gennaio 2025): 100.000 euro per SMS di modifica senza il riferimento alla facoltà di cambiare operatore gratis.</p>' +
+      '<p><b>Conciliazione.</b> <a href="https://www.agcom.it/agcom-per-te/i-miei-diritti/contenzioso-tra-utenti-e-operatori" target="_blank" rel="noopener">AGCOM, contenzioso fra utenti e operatori (ConciliaWeb)</a>.</p>' +
+      '<p class="hint">Testi delle norme e dei casi come riportati nella scheda S16 del kit di Hack the Market! 2026 (Prosumer APS, CC BY-SA 4.0). L\'app non stabilisce se un operatore ha violato la legge in un caso concreto.</p></div>';
+  }
+};
+
+var corrente = "home", parametro = null;
+function render(s, p) { corrente = s; if (p !== undefined) parametro = p; main.innerHTML = SCHERMATE[s](parametro); document.title = "SIM-Check"; }
+
+document.addEventListener("click", function (ev) {
+  var t = ev.target.closest("[data-go],[data-back],[data-act],[data-rm],[data-carica]"); if (!t) return;
+  if (t.dataset.go) { ev.preventDefault(); if (t.dataset.tipo) parametro = t.dataset.tipo; vai(t.dataset.go); if (t.dataset.tipo) render("lettera", t.dataset.tipo); return; }
+  if (t.dataset.back) { indietro(); return; }
+  if (t.dataset.rm) { stato.offerta.extra.splice(+t.dataset.rm, 1); render("extra"); return; }
+  if (t.dataset.carica) { var c = SC.CASI.filter(function (x) { return x.id === +t.dataset.carica; })[0]; stato.offerta = JSON.parse(JSON.stringify(c.offerta)); if (c.sms) stato.sms = JSON.parse(JSON.stringify(c.sms)); storia = ["offerta", "extra"]; vai("risultato"); return; }
+  var a = t.dataset.act;
+  if (a === "salvaOfferta") {
+    var o = stato.offerta; o.nome = document.getElementById("o-nome").value.trim(); o.prezzo = num("o-prezzo", null);
+    if (o.prezzo == null) { toast("Scrivi il prezzo pubblicizzato"); document.getElementById("o-prezzo").focus(); return; }
+    o.rinnovo = val("rinnovo") || "mese"; o.promoPeriodi = Math.round(num("o-promo", 0)); o.prezzoDopo = num("o-dopo", null); o.attivazione = num("o-att", 0); o.sim = num("o-sim", 0); vai("extra");
+  }
+  if (a === "aggiungiExtra") {
+    var nome = document.getElementById("e-nome").value.trim(), prezzo = num("e-prezzo", null);
+    if (!nome || prezzo == null) { toast("Scrivi nome e prezzo del servizio"); return; }
+    stato.offerta.extra.push({ nome: nome, prezzo: prezzo, ogni: document.getElementById("e-ogni").value, otp: val("e-otp") === "si" }); render("extra");
+  }
+  if (a === "calcola") {
+    var b = val("blocco"), si = val("sintesi");
+    if (b == null || si == null) { toast("Rispondi ai due controlli"); return; }
+    stato.offerta.bloccoPremium = b === "si"; stato.offerta.sintesi = si === "si"; vai("risultato");
+  }
+  if (a === "calcolaSms") {
+    var s = stato.sms; s.dataSms = document.getElementById("s-data").value; s.dataNuovo = document.getElementById("s-nuovo").value; s.prezzoVecchio = num("s-pv", null); s.prezzoNuovo = num("s-pn", null); var c2 = val("cita");
+    if (!s.dataSms || !s.dataNuovo || s.prezzoVecchio == null || s.prezzoNuovo == null || c2 == null) { toast("Compila date, prezzi e la domanda sull'SMS"); return; }
+    s.citaRecesso = c2 === "si"; vai("risultatoSms");
+  }
+  if (a === "copiaLettera") copia(document.getElementById("testo-lettera").value);
+});
+render("home");
+
+</script>
+</body>
+</html>
